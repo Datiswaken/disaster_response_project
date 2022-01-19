@@ -23,6 +23,15 @@ nltk.download(['punkt', 'wordnet', 'stopwords', 'omw-1.4'])
 
 
 def load_data(database_filepath: str) -> Tuple[List[str], DataFrame, List[str]]:
+    """
+    Load the data from a sqlite database and return data in the necessary format to build a ML model
+
+    :param database_filepath: Filepath to a sqlite database
+    :return: Returns a tuple containing three elements:
+        - A list of messages
+        - A dataframe containing the category labels
+        - The category names
+    """
     engine = create_engine(f'sqlite:///{database_filepath}')
     df = pd.read_sql('SELECT * FROM social_media_messages', engine)
     x = df['message'].values
@@ -32,6 +41,12 @@ def load_data(database_filepath: str) -> Tuple[List[str], DataFrame, List[str]]:
 
 
 def tokenize(text: str) -> List[str]:
+    """
+    Process a string with different steps like string replacement, tokenization and lemmatisation
+
+    :param text: A string to be processed
+    :return: Returns the processed string
+    """
     url_regex = 'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\(\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+'
     detected_urls = re.findall(url_regex, text)
     for url in detected_urls:
@@ -49,6 +64,11 @@ def tokenize(text: str) -> List[str]:
 
 
 def build_model() -> GridSearchCV:
+    """
+    Build a model containing a pipeline with different steps
+
+    :return: Returns a GridSearchCV object
+    """
     forest = RandomForestClassifier()
 
     pipeline = Pipeline([
@@ -65,6 +85,15 @@ def build_model() -> GridSearchCV:
 
 
 def evaluate_model(model: GridSearchCV, X_test: NDArray, Y_test: DataFrame, category_names: List[str]) -> None:
+    """
+    Evaluate a given model and print the results
+
+    :param model: The model to be evaluated
+    :param X_test: Independent variables for testing the model
+    :param Y_test: Dependent variable for testing the model
+    :param category_names: List of category names
+    :return: None - But prints the results to the console
+    """
     model.fit(X_test, Y_test)
     Y_pred = model.predict(X_test)
 
@@ -72,6 +101,13 @@ def evaluate_model(model: GridSearchCV, X_test: NDArray, Y_test: DataFrame, cate
 
 
 def save_model(model: GridSearchCV, model_filepath: str) -> None:
+    """
+    Save a given machine learning model to a .pkl file
+
+    :param model: The model to be saved
+    :param model_filepath: The filepath where the model should be stored as a .pkl file
+    :return: None
+    """
     file = open(model_filepath, 'wb')
     pickle.dump(model.best_estimator_, file)
     file.close()
