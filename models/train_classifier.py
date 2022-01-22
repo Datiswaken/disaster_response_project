@@ -69,7 +69,7 @@ def build_model() -> GridSearchCV:
 
     :return: Returns a GridSearchCV object
     """
-    forest = RandomForestClassifier()
+    forest = RandomForestClassifier(random_state=13)
 
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize, stop_words=stopwords.words('english'))),
@@ -77,11 +77,13 @@ def build_model() -> GridSearchCV:
         ('clf', MultiOutputClassifier(forest))
     ])
 
+    # Best parameter combination proofed to be n_estimators = 100 and min_samples_split = 2
     parameters = {
-        'clf__estimator__n_estimators': [1]
+        'clf__estimator__n_estimators': [100, 200],
+        'clf__estimator__min_samples_split': [2, 5, 10]
     }
 
-    return GridSearchCV(pipeline, param_grid=parameters)
+    return GridSearchCV(pipeline, param_grid=parameters, n_jobs=6, verbose=2)
 
 
 def evaluate_model(model: GridSearchCV, X_test: NDArray, Y_test: DataFrame, category_names: List[str]) -> None:
